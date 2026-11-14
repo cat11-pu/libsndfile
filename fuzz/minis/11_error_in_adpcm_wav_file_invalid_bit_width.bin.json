@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_02888_trunc_trunc_at75.bin",
+ "output": "minis/11_error_in_adpcm_wav_file_invalid_bit_width.bin",
+ "original_size": 75,
+ "minimized_size": 66,
+ "signature": [
+  "open_error",
+  "Error in ADPCM WAV file. Invalid bit width."
+ ],
+ "asan_clean": true,
+ "hex": "726966662e91cf11a5d628db04c10000480400000000000077617665f3acd3118cd100c04f8edb8a666d7420f3acd3118cd100c04f8edb8aff000000000008000200"
+}

@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00732_trunc_trunc_at12.bin",
+ "output": "minis/05_error_in_w64_file_no_data_chunk_marker.bin",
+ "original_size": 12,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "Error in W64 file. No 'data' chunk marker."
+ ],
+ "asan_clean": true,
+ "hex": "7269666617486708526b146d"
+}

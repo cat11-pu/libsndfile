@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00135_size_size_hugeLE@4.bin",
+ "output": "minis/12_unspecified_internal_error.bin",
+ "original_size": 772,
+ "minimized_size": 16,
+ "signature": [
+  "open_error",
+  "Unspecified internal error."
+ ],
+ "asan_clean": true,
+ "hex": "2e736e64ff7f7f7f0000017600000001"
+}

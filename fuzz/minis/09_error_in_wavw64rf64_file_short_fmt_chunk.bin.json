@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00004_field_field_zero@16.bin",
+ "output": "minis/09_error_in_wavw64rf64_file_short_fmt_chunk.bin",
+ "original_size": 60,
+ "minimized_size": 20,
+ "signature": [
+  "open_error",
+  "Error in WAV/W64/RF64 file. Short 'fmt ' chunk."
+ ],
+ "asan_clean": true,
+ "hex": "524946461a00000057415645666d742000000000"
+}

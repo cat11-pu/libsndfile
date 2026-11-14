@@ -1,0 +1,142 @@
+[
+ {
+  "name": "00_format_not_recognised.bin",
+  "source": "m_00102_trunc_trunc_at0.bin",
+  "status": "open_error",
+  "error": "Format not recognised.",
+  "original_size": 0,
+  "minimized_size": 0,
+  "asan_clean": true,
+  "hex": ""
+ },
+ {
+  "name": "01_error_in_wav_file_no_data_chunk_marker.bin",
+  "source": "m_00360_trunc_trunc_at12.bin",
+  "status": "open_error",
+  "error": "Error in WAV file. No 'data' chunk marker.",
+  "original_size": 12,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "524946463420000057415645"
+ },
+ {
+  "name": "02_file_contains_data_in_an_unimplemented_format.bin",
+  "source": "m_00235_trunc_trunc_at12.bin",
+  "status": "open_error",
+  "error": "File contains data in an unimplemented format.",
+  "original_size": 12,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "4f6767530001000000000000"
+ },
+ {
+  "name": "03_channel_count_is_zero.bin",
+  "source": "m_01223_trunc_trunc_at12.bin",
+  "status": "open_error",
+  "error": "Channel count is zero.",
+  "original_size": 12,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "464f524d0000066641494643"
+ },
+ {
+  "name": "04_too_many_channels_specified.bin",
+  "source": "m_00110_trunc_trunc_at12.bin",
+  "status": "open_error",
+  "error": "Too many channels specified.",
+  "original_size": 12,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "2e736e640000000c00000430"
+ },
+ {
+  "name": "05_error_in_w64_file_no_data_chunk_marker.bin",
+  "source": "m_00732_trunc_trunc_at12.bin",
+  "status": "open_error",
+  "error": "Error in W64 file. No 'data' chunk marker.",
+  "original_size": 12,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "7269666617486708526b146d"
+ },
+ {
+  "name": "06_supported_file_format_but_file_is_malformed.bin",
+  "source": "m_00485_trunc_trunc_at12.bin",
+  "status": "open_error",
+  "error": "Supported file format but file is malformed.",
+  "original_size": 12,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "636166660000000064657363"
+ },
+ {
+  "name": "07_error_in_8svx_16sv_file_no_sound_data.bin",
+  "source": "m_01102_trunc_trunc_at12.bin",
+  "status": "open_error",
+  "error": "Error in 8SVX / 16SV file, no sound data.",
+  "original_size": 12,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "464f524d00000a1031365356"
+ },
+ {
+  "name": "08_internal_error_sfinfo_struct_incomplete.bin",
+  "source": "m_00006_field_field_zero@24.bin",
+  "status": "open_error",
+  "error": "Internal error : SF_INFO struct incomplete.",
+  "original_size": 60,
+  "minimized_size": 41,
+  "asan_clean": true,
+  "hex": "524946461a00000057415645666d7420100000000100ff0000000000401f0000010008006461746100"
+ },
+ {
+  "name": "09_error_in_wavw64rf64_file_short_fmt_chunk.bin",
+  "source": "m_00004_field_field_zero@16.bin",
+  "status": "open_error",
+  "error": "Error in WAV/W64/RF64 file. Short 'fmt ' chunk.",
+  "original_size": 60,
+  "minimized_size": 20,
+  "asan_clean": true,
+  "hex": "524946461a00000057415645666d742000000000"
+ },
+ {
+  "name": "10_error_in_wavw64rf64_file_malformed_fmt_chunk.bin",
+  "source": "m_00016_size_size_hugeBE@20.bin",
+  "status": "open_error",
+  "error": "Error in WAV/W64/RF64 file. Malformed 'fmt ' chunk.",
+  "original_size": 60,
+  "minimized_size": 17,
+  "asan_clean": true,
+  "hex": "524946461a00000057415645666d74201f"
+ },
+ {
+  "name": "11_error_in_adpcm_wav_file_invalid_bit_width.bin",
+  "source": "m_02888_trunc_trunc_at75.bin",
+  "status": "open_error",
+  "error": "Error in ADPCM WAV file. Invalid bit width.",
+  "original_size": 75,
+  "minimized_size": 66,
+  "asan_clean": true,
+  "hex": "726966662e91cf11a5d628db04c10000480400000000000077617665f3acd3118cd100c04f8edb8a666d7420f3acd3118cd100c04f8edb8aff000000000008000200"
+ },
+ {
+  "name": "12_unspecified_internal_error.bin",
+  "source": "m_00135_size_size_hugeLE@4.bin",
+  "status": "open_error",
+  "error": "Unspecified internal error.",
+  "original_size": 772,
+  "minimized_size": 16,
+  "asan_clean": true,
+  "hex": "2e736e64ff7f7f7f0000017600000001"
+ },
+ {
+  "name": "13_error_in_nist_file_bad_header.bin",
+  "source": "m_01358_field_field_zero@4.bin",
+  "status": "open_error",
+  "error": "Error in NIST file, bad header.",
+  "original_size": 1172,
+  "minimized_size": 12,
+  "asan_clean": true,
+  "hex": "4e49535418191a0531341a00"
+ }
+]

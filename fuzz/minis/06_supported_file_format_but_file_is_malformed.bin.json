@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00485_trunc_trunc_at12.bin",
+ "output": "minis/06_supported_file_format_but_file_is_malformed.bin",
+ "original_size": 12,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "Supported file format but file is malformed."
+ ],
+ "asan_clean": true,
+ "hex": "636166660000000064657363"
+}

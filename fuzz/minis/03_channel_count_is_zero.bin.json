@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_01223_trunc_trunc_at12.bin",
+ "output": "minis/03_channel_count_is_zero.bin",
+ "original_size": 12,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "Channel count is zero."
+ ],
+ "asan_clean": true,
+ "hex": "464f524d0000066641494643"
+}

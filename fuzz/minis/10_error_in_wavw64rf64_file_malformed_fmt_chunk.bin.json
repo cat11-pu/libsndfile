@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00016_size_size_hugeBE@20.bin",
+ "output": "minis/10_error_in_wavw64rf64_file_malformed_fmt_chunk.bin",
+ "original_size": 60,
+ "minimized_size": 17,
+ "signature": [
+  "open_error",
+  "Error in WAV/W64/RF64 file. Malformed 'fmt ' chunk."
+ ],
+ "asan_clean": true,
+ "hex": "524946461a00000057415645666d74201f"
+}

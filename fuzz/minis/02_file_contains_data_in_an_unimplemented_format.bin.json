@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00235_trunc_trunc_at12.bin",
+ "output": "minis/02_file_contains_data_in_an_unimplemented_format.bin",
+ "original_size": 12,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "File contains data in an unimplemented format."
+ ],
+ "asan_clean": true,
+ "hex": "4f6767530001000000000000"
+}

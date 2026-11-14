@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_01358_field_field_zero@4.bin",
+ "output": "minis/13_error_in_nist_file_bad_header.bin",
+ "original_size": 1172,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "Error in NIST file, bad header."
+ ],
+ "asan_clean": true,
+ "hex": "4e49535418191a0531341a00"
+}

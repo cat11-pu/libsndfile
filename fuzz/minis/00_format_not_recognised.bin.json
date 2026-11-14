@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00102_trunc_trunc_at0.bin",
+ "output": "minis/00_format_not_recognised.bin",
+ "original_size": 0,
+ "minimized_size": 0,
+ "signature": [
+  "open_error",
+  "Format not recognised."
+ ],
+ "asan_clean": true,
+ "hex": ""
+}

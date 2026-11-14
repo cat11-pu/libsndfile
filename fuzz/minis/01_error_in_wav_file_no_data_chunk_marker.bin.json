@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00360_trunc_trunc_at12.bin",
+ "output": "minis/01_error_in_wav_file_no_data_chunk_marker.bin",
+ "original_size": 12,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "Error in WAV file. No 'data' chunk marker."
+ ],
+ "asan_clean": true,
+ "hex": "524946463420000057415645"
+}

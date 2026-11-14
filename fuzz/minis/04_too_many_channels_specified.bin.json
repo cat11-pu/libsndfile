@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00110_trunc_trunc_at12.bin",
+ "output": "minis/04_too_many_channels_specified.bin",
+ "original_size": 12,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "Too many channels specified."
+ ],
+ "asan_clean": true,
+ "hex": "2e736e640000000c00000430"
+}

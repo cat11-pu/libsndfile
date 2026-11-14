@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_01102_trunc_trunc_at12.bin",
+ "output": "minis/07_error_in_8svx_16sv_file_no_sound_data.bin",
+ "original_size": 12,
+ "minimized_size": 12,
+ "signature": [
+  "open_error",
+  "Error in 8SVX / 16SV file, no sound data."
+ ],
+ "asan_clean": true,
+ "hex": "464f524d00000a1031365356"
+}

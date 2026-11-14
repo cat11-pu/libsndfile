@@ -1,0 +1,12 @@
+{
+ "source": "malformed/m_00006_field_field_zero@24.bin",
+ "output": "minis/08_internal_error_sfinfo_struct_incomplete.bin",
+ "original_size": 60,
+ "minimized_size": 41,
+ "signature": [
+  "open_error",
+  "Internal error : SF_INFO struct incomplete."
+ ],
+ "asan_clean": true,
+ "hex": "524946461a00000057415645666d7420100000000100ff0000000000401f0000010008006461746100"
+}
