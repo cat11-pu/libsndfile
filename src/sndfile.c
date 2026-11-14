@@ -2183,6 +2183,229 @@ sf_readf_double	(SNDFILE *sndfile, double *ptr, sf_count_t frames)
 */
 
 sf_count_t
+sf_readf_range_short	(SNDFILE *sndfile, short *ptr, sf_count_t start, sf_count_t frames)
+{	SF_PRIVATE 	*psf ;
+	sf_count_t	saved, count ;
+
+	if (sndfile == NULL)
+	{	sf_errno = SFE_BAD_SNDFILE_PTR ;
+		return -1 ;
+		} ;
+	psf = (SF_PRIVATE *) sndfile ;
+	psf->error = 0 ;
+
+	if (start < 0 || frames < 0)
+	{	psf->error = SFE_NEGATIVE_RW_LEN ;
+		return -1 ;
+		} ;
+
+	if (ptr == NULL && frames > 0)
+	{	psf->error = SFE_BAD_INT_PTR ;
+		return -1 ;
+		} ;
+
+	if (psf->file.mode == SFM_WRITE)
+	{	psf->error = SFE_NOT_READMODE ;
+		return -1 ;
+		} ;
+
+	if (frames == 0)
+		return 0 ;
+
+	if (start >= psf->sf.frames)
+	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (short)) ;
+		return 0 ;
+		} ;
+
+	if ((saved = sf_seek (sndfile, 0, SEEK_CUR | SFM_READ)) < 0)
+		return -1 ;
+
+	if (sf_seek (sndfile, start, SEEK_SET | SFM_READ) < 0)
+		return -1 ;
+
+	count = sf_readf_short (sndfile, ptr, frames) ;
+
+	if (count < frames)
+		psf_memset (ptr + count * psf->sf.channels, 0,
+				(frames - count) * psf->sf.channels * sizeof (short)) ;
+
+	if (sf_seek (sndfile, saved, SEEK_SET | SFM_READ) < 0)
+	{	psf->error = SFE_BAD_SEEK ;
+		return -1 ;
+		} ;
+
+	return count ;
+} /* sf_readf_range_short */
+
+sf_count_t
+sf_readf_range_int	(SNDFILE *sndfile, int *ptr, sf_count_t start, sf_count_t frames)
+{	SF_PRIVATE 	*psf ;
+	sf_count_t	saved, count ;
+
+	if (sndfile == NULL)
+	{	sf_errno = SFE_BAD_SNDFILE_PTR ;
+		return -1 ;
+		} ;
+	psf = (SF_PRIVATE *) sndfile ;
+	psf->error = 0 ;
+
+	if (start < 0 || frames < 0)
+	{	psf->error = SFE_NEGATIVE_RW_LEN ;
+		return -1 ;
+		} ;
+
+	if (ptr == NULL && frames > 0)
+	{	psf->error = SFE_BAD_INT_PTR ;
+		return -1 ;
+		} ;
+
+	if (psf->file.mode == SFM_WRITE)
+	{	psf->error = SFE_NOT_READMODE ;
+		return -1 ;
+		} ;
+
+	if (frames == 0)
+		return 0 ;
+
+	if (start >= psf->sf.frames)
+	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (int)) ;
+		return 0 ;
+		} ;
+
+	if ((saved = sf_seek (sndfile, 0, SEEK_CUR | SFM_READ)) < 0)
+		return -1 ;
+
+	if (sf_seek (sndfile, start, SEEK_SET | SFM_READ) < 0)
+		return -1 ;
+
+	count = sf_readf_int (sndfile, ptr, frames) ;
+
+	if (count < frames)
+		psf_memset (ptr + count * psf->sf.channels, 0,
+				(frames - count) * psf->sf.channels * sizeof (int)) ;
+
+	if (sf_seek (sndfile, saved, SEEK_SET | SFM_READ) < 0)
+	{	psf->error = SFE_BAD_SEEK ;
+		return -1 ;
+		} ;
+
+	return count ;
+} /* sf_readf_range_int */
+
+sf_count_t
+sf_readf_range_float	(SNDFILE *sndfile, float *ptr, sf_count_t start, sf_count_t frames)
+{	SF_PRIVATE 	*psf ;
+	sf_count_t	saved, count ;
+
+	if (sndfile == NULL)
+	{	sf_errno = SFE_BAD_SNDFILE_PTR ;
+		return -1 ;
+		} ;
+	psf = (SF_PRIVATE *) sndfile ;
+	psf->error = 0 ;
+
+	if (start < 0 || frames < 0)
+	{	psf->error = SFE_NEGATIVE_RW_LEN ;
+		return -1 ;
+		} ;
+
+	if (ptr == NULL && frames > 0)
+	{	psf->error = SFE_BAD_INT_PTR ;
+		return -1 ;
+		} ;
+
+	if (psf->file.mode == SFM_WRITE)
+	{	psf->error = SFE_NOT_READMODE ;
+		return -1 ;
+		} ;
+
+	if (frames == 0)
+		return 0 ;
+
+	if (start >= psf->sf.frames)
+	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (float)) ;
+		return 0 ;
+		} ;
+
+	if ((saved = sf_seek (sndfile, 0, SEEK_CUR | SFM_READ)) < 0)
+		return -1 ;
+
+	if (sf_seek (sndfile, start, SEEK_SET | SFM_READ) < 0)
+		return -1 ;
+
+	count = sf_readf_float (sndfile, ptr, frames) ;
+
+	if (count < frames)
+		psf_memset (ptr + count * psf->sf.channels, 0,
+				(frames - count) * psf->sf.channels * sizeof (float)) ;
+
+	if (sf_seek (sndfile, saved, SEEK_SET | SFM_READ) < 0)
+	{	psf->error = SFE_BAD_SEEK ;
+		return -1 ;
+		} ;
+
+	return count ;
+} /* sf_readf_range_float */
+
+sf_count_t
+sf_readf_range_double	(SNDFILE *sndfile, double *ptr, sf_count_t start, sf_count_t frames)
+{	SF_PRIVATE 	*psf ;
+	sf_count_t	saved, count ;
+
+	if (sndfile == NULL)
+	{	sf_errno = SFE_BAD_SNDFILE_PTR ;
+		return -1 ;
+		} ;
+	psf = (SF_PRIVATE *) sndfile ;
+	psf->error = 0 ;
+
+	if (start < 0 || frames < 0)
+	{	psf->error = SFE_NEGATIVE_RW_LEN ;
+		return -1 ;
+		} ;
+
+	if (ptr == NULL && frames > 0)
+	{	psf->error = SFE_BAD_INT_PTR ;
+		return -1 ;
+		} ;
+
+	if (psf->file.mode == SFM_WRITE)
+	{	psf->error = SFE_NOT_READMODE ;
+		return -1 ;
+		} ;
+
+	if (frames == 0)
+		return 0 ;
+
+	if (start >= psf->sf.frames)
+	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (double)) ;
+		return 0 ;
+		} ;
+
+	if ((saved = sf_seek (sndfile, 0, SEEK_CUR | SFM_READ)) < 0)
+		return -1 ;
+
+	if (sf_seek (sndfile, start, SEEK_SET | SFM_READ) < 0)
+		return -1 ;
+
+	count = sf_readf_double (sndfile, ptr, frames) ;
+
+	if (count < frames)
+		psf_memset (ptr + count * psf->sf.channels, 0,
+				(frames - count) * psf->sf.channels * sizeof (double)) ;
+
+	if (sf_seek (sndfile, saved, SEEK_SET | SFM_READ) < 0)
+	{	psf->error = SFE_BAD_SEEK ;
+		return -1 ;
+		} ;
+
+	return count ;
+} /* sf_readf_range_double */
+
+/*------------------------------------------------------------------------------
+*/
+
+sf_count_t
 sf_write_raw	(SNDFILE *sndfile, const void *ptr, sf_count_t len)
 {	SF_PRIVATE 	*psf ;
 	sf_count_t	count ;

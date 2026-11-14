@@ -1004,6 +1004,17 @@ if (BUILD_TESTING)
 		)
 	add_test (error_test error_test)
 
+	### readf_range_test
+
+	add_executable (readf_range_test tests/readf_range_test.c)
+	target_link_libraries (readf_range_test
+		PRIVATE
+			sndfile
+			test_utils
+			$<$<BOOL:${LIBM_REQUIRED}>:m>
+		)
+	add_test (readf_range_test readf_range_test)
+
 	### ulaw_test
 	add_executable (ulaw_test tests/ulaw_test.c)
 	target_link_libraries (ulaw_test

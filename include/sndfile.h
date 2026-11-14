@@ -737,6 +737,29 @@ sf_count_t	sf_readf_double		(SNDFILE *sndfile, double *ptr, sf_count_t frames) ;
 sf_count_t	sf_writef_double	(SNDFILE *sndfile, const double *ptr, sf_count_t frames) ;
 
 
+/* Functions for reading a range of frames [start, start + frames) directly
+** into a caller supplied buffer, without disturbing the current read or
+** write position of the file.
+** The data returned is identical to reading the whole file with the
+** matching sf_readf_XXXX function and taking the same slice of frames.
+** Return values :
+**     >= 0 : the number of frames actually read into ptr. Requests that
+**            extend past the end of the file are clamped, so the count may
+**            be shorter than requested. A start at or past the end of file
+**            returns 0. The remainder of the requested range past the end
+**            of the file is zero filled.
+**     -1   : the request itself is invalid (negative start or frames, a
+**            NULL ptr with frames > 0, a file open in SFM_WRITE mode or an
+**            unseekable file). Call sf_error()/sf_strerror() for details.
+** The file must be seekable.
+*/
+
+sf_count_t	sf_readf_range_short	(SNDFILE *sndfile, short *ptr, sf_count_t start, sf_count_t frames) ;
+sf_count_t	sf_readf_range_int		(SNDFILE *sndfile, int *ptr, sf_count_t start, sf_count_t frames) ;
+sf_count_t	sf_readf_range_float	(SNDFILE *sndfile, float *ptr, sf_count_t start, sf_count_t frames) ;
+sf_count_t	sf_readf_range_double	(SNDFILE *sndfile, double *ptr, sf_count_t start, sf_count_t frames) ;
+
+
 /* Functions for reading and writing the data chunk in terms of items.
 ** Otherwise similar to above.
 ** All of these read/write function return number of items read/written.

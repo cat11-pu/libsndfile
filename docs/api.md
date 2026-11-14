@@ -43,6 +43,7 @@ documented) [here](command.md).**
 | [sf_write_sync](#write_sync)                                                                                | Write sync function.                           |
 | [sf_read_short, sf_read_int, sf_read_float, sf_read_double](#read)                                          | File items read functions.                     |
 | [sf_readf_short, sf_readf_int, sf_readf_float, sf_readf_double](#readf)                                     | File frames read functions.                    |
+| [sf_readf_range_short, sf_readf_range_int, sf_readf_range_float, sf_readf_range_double](#readf-range)       | File frame range read functions.               |
 | [sf_write_short, sf_write_int, sf_write_float, sf_write_double](#write)                                     | File items write functions.                    |
 | [sf_writef_short, sf_writef_int, sf_writef_float, sf_writef_double](#writef)                                | File frames write functions.                   |
 | [sf_read_raw, sf_write_raw](#raw)                                                                           | Raw read/write functions.                      |
@@ -458,6 +459,31 @@ read beyond the end of the file will not result in an error but will cause the
 read functions to return less than the number of objects requested or 0 if
 already at the end of the file. When the buffer is not is not completely filled,
 unused buffer space is filled by zeroes.
+
+## File Range Read Functions {#readf-range}
+
+```c
+sf_count_t sf_readf_range_short  (SNDFILE *sndfile, short *ptr, sf_count_t start, sf_count_t frames) ;
+sf_count_t sf_readf_range_int    (SNDFILE *sndfile, int *ptr, sf_count_t start, sf_count_t frames) ;
+sf_count_t sf_readf_range_float  (SNDFILE *sndfile, float *ptr, sf_count_t start, sf_count_t frames) ;
+sf_count_t sf_readf_range_double (SNDFILE *sndfile, double *ptr, sf_count_t start, sf_count_t frames) ;
+```
+
+The range read functions read the frames in the half-open interval
+[start, start + frames) directly into the array pointed to by ptr, without
+disturbing the current read or write position of the file. The file must be
+seekable. The data returned is identical to reading the whole file with the
+matching sf_readf_XXXX function and taking the same slice of frames.
+
+The return value is the number of frames actually read into ptr:
+
+* Requests that extend past the end of the file are clamped, so the count may
+  be shorter than requested; the remainder of the requested range is zero
+  filled.
+* A start at or past the end of the file returns 0.
+* A return value of -1 means the request itself is invalid (negative start or
+  frames, a NULL ptr with frames > 0, a file open in SFM_WRITE mode or an
+  unseekable file); sf_error() and sf_strerror() give details.
 
 ## File Write Functions {#write}
 

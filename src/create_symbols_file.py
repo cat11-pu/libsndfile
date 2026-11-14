@@ -80,6 +80,11 @@ ALL_SYMBOLS = (
 	(	"sf_get_chunk_iterator",	103 ),
 	(	"sf_next_chunk_iterator",	104 ),
 	(	"sf_current_byterate",	110 )
+	,
+	(	"sf_readf_range_short",	111 ),
+	(	"sf_readf_range_int",	112 ),
+	(	"sf_readf_range_float",	113 ),
+	(	"sf_readf_range_double",114 )
 	)
 
 #-------------------------------------------------------------------------------
@@ -178,4 +183,3 @@ else:
 	no_symbols (os_name)
 
 sys.exit (0)
-

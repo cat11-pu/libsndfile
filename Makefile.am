@@ -213,7 +213,7 @@ endif
 TESTS = tests/pedantic-header-test.sh
 
 check_PROGRAMS += tests/sfversion tests/floating_point_test tests/write_read_test \
-	tests/lossy_comp_test tests/error_test tests/ulaw_test tests/alaw_test tests/dwvw_test \
+	tests/lossy_comp_test tests/error_test tests/readf_range_test tests/ulaw_test tests/alaw_test tests/dwvw_test \
 	tests/peak_chunk_test tests/command_test tests/stdio_test \
 	tests/pcm_test tests/headerless_test tests/pipe_test tests/header_test tests/misc_test \
 	tests/raw_test tests/string_test tests/multi_file_test tests/chunk_test \
@@ -277,6 +277,9 @@ tests_fix_this_LDADD = src/libsndfile.la
 
 tests_error_test_SOURCES = tests/error_test.c tests/utils.c tests/utils.h
 tests_error_test_LDADD = src/libsndfile.la
+
+tests_readf_range_test_SOURCES = tests/readf_range_test.c tests/utils.c tests/utils.h
+tests_readf_range_test_LDADD = src/libsndfile.la
 
 tests_ulaw_test_SOURCES = tests/utils.c tests/ulaw_test.c tests/utils.h
 tests_ulaw_test_LDADD = src/libsndfile.la
