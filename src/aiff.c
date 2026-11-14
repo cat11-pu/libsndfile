@@ -227,6 +227,18 @@ static SF_CHUNK_ITERATOR * aiff_next_chunk_iterator (SF_PRIVATE *psf, SF_CHUNK_I
 static int aiff_get_chunk_size (SF_PRIVATE *psf, const SF_CHUNK_ITERATOR * iterator, SF_CHUNK_INFO * chunk_info) ;
 static int aiff_get_chunk_data (SF_PRIVATE *psf, const SF_CHUNK_ITERATOR * iterator, SF_CHUNK_INFO * chunk_info) ;
 
+static void
+aiff_mark_truncated (SF_PRIVATE *psf, sf_count_t offset)
+{
+	if (psf->truncated == 0)
+	{	psf->truncated = SFE_AIFF_TRUNCATED ;
+		psf->truncation_offset = offset ;
+		snprintf (psf->truncstr, sizeof (psf->truncstr),
+				"AIFF file is truncated at byte offset %" PRId64 ".", offset) ;
+		psf_log_printf (psf, "*** AIFF file truncated at byte offset %D.\n", offset) ;
+		} ;
+} /* aiff_mark_truncated */
+
 /*------------------------------------------------------------------------------
 ** Public function.
 */
@@ -467,7 +479,15 @@ aiff_read_header (SF_PRIVATE *psf, COMM_CHUNK *comm_fmt)
 						psf_log_printf (psf, "FORM : %u\n %M\n", FORMsize, marker) ;
 						}
 					else if (FORMsize != psf->filelength - 2 * SIGNED_SIZEOF (chunk_size))
-					{	chunk_size = psf->filelength - 2 * sizeof (chunk_size) ;
+					{	/* 0xfffffff8 is the placeholder written while an AIFF
+						** header is still being updated. It is not a
+						** truncation indication.
+						*/
+						if (FORMsize != 0xfffffff8u && (psf->filelength < 2 * SIGNED_SIZEOF (chunk_size)
+								|| FORMsize > psf->filelength - 2 * SIGNED_SIZEOF (chunk_size)))
+							aiff_mark_truncated (psf, psf->filelength) ;
+						chunk_size = psf->filelength > 2 * SIGNED_SIZEOF (chunk_size) ?
+								psf->filelength - 2 * SIGNED_SIZEOF (chunk_size) : 0 ;
 						psf_log_printf (psf, "FORM : %u (should be %u)\n %M\n", FORMsize, chunk_size, marker) ;
 						FORMsize = chunk_size ;
 						}
@@ -545,33 +565,52 @@ aiff_read_header (SF_PRIVATE *psf, COMM_CHUNK *comm_fmt)
 					SSNDsize = chunk_size ;
 					psf_binheader_readf (psf, "E44", &(ssnd_fmt.offset), &(ssnd_fmt.blocksize)) ;
 
-					psf->datalength = SSNDsize - sizeof (ssnd_fmt) ;
-					psf->dataoffset = psf_ftell (psf) ;
-
-					if (psf->datalength > psf->filelength - psf->dataoffset || psf->datalength < 0)
-					{	psf_log_printf (psf, " SSND : %u (should be %D)\n", SSNDsize, psf->filelength - psf->dataoffset + sizeof (SSND_CHUNK)) ;
-						psf->datalength = psf->filelength - psf->dataoffset ;
+					if (SSNDsize < sizeof (ssnd_fmt))
+					{	aiff_mark_truncated (psf, psf->filelength) ;
+						psf->datalength = 0 ;
 						}
 					else
-						psf_log_printf (psf, " SSND : %u\n", SSNDsize) ;
+						psf->datalength = SSNDsize - sizeof (ssnd_fmt) ;
+					psf->dataoffset = psf_ftell (psf) ;
+
+					{	sf_count_t available = (psf->filelength == SF_COUNT_MAX || psf->dataoffset <= psf->filelength) ?
+								psf->filelength - psf->dataoffset : 0 ;
+
+						if (psf->dataoffset > psf->filelength)
+							aiff_mark_truncated (psf, psf->filelength) ;
+
+						if (psf->datalength > available || psf->datalength < 0)
+						{	psf_log_printf (psf, " SSND : %u (should be %D)\n", SSNDsize, available + sizeof (SSND_CHUNK)) ;
+							aiff_mark_truncated (psf, psf->filelength) ;
+							psf->datalength = available ;
+							}
+						else
+							psf_log_printf (psf, " SSND : %u\n", SSNDsize) ;
+					}
 
 					if (ssnd_fmt.offset == 0 || psf->dataoffset + ssnd_fmt.offset == ssnd_fmt.blocksize)
 					{	psf_log_printf (psf, "  Offset     : %u\n", ssnd_fmt.offset) ;
 						psf_log_printf (psf, "  Block Size : %u\n", ssnd_fmt.blocksize) ;
-
-						psf->dataoffset += ssnd_fmt.offset ;
-						psf->datalength -= ssnd_fmt.offset ;
 						}
 					else
 					{	psf_log_printf (psf, "  Offset     : %u\n", ssnd_fmt.offset) ;
 						psf_log_printf (psf, "  Block Size : %u ???\n", ssnd_fmt.blocksize) ;
-						psf->dataoffset += ssnd_fmt.offset ;
+						} ;
+
+					if (ssnd_fmt.offset > (uint32_t) psf->datalength)
+					{	aiff_mark_truncated (psf, psf->filelength) ;
+						psf->dataoffset = psf->filelength ;
+						psf->datalength = 0 ;
+						}
+					else
+					{	psf->dataoffset += ssnd_fmt.offset ;
 						psf->datalength -= ssnd_fmt.offset ;
 						} ;
 
 					/* Only set dataend if there really is data at the end. */
-					if (psf->datalength + psf->dataoffset < psf->filelength)
-						psf->dataend = psf->datalength + psf->dataoffset ;
+					if (psf->dataoffset >= 0 && psf->dataoffset < psf->filelength
+							&& psf->datalength < psf->filelength - psf->dataoffset)
+						psf->dataend = psf->dataoffset + psf->datalength ;
 
 					found_chunk |= HAVE_SSND ;
 
@@ -796,16 +835,22 @@ aiff_read_header (SF_PRIVATE *psf, COMM_CHUNK *comm_fmt)
 						if (paiff->markstr != NULL)
 						{	psf_log_printf (psf, "*** Second MARK chunk found. Throwing away the first.\n") ;
 							free (paiff->markstr) ;
+							paiff->markstr = NULL ;
 							} ;
-						paiff->markstr = calloc (mark_count, sizeof (MARK_ID_POS)) ;
-						if (paiff->markstr == NULL)
-							return SFE_MALLOC_FAILED ;
 
 						if (mark_count > 2500) /* 2500 is close to the largest number of cues possible because of block sizes */
 						{	psf_log_printf (psf, "  More than 2500 markers, skipping!\n") ;
-							psf_binheader_readf (psf, "j", chunk_size - bytesread) ;
+							if (chunk_size > bytesread)
+								psf_binheader_readf (psf, "j", chunk_size - bytesread) ;
+							mark_count = 0 ;
 							break ;
-						} ;
+							} ;
+
+						if (mark_count > 0)
+						{	paiff->markstr = calloc (mark_count, sizeof (MARK_ID_POS)) ;
+							if (paiff->markstr == NULL)
+								return SFE_MALLOC_FAILED ;
+							} ;
 
 						if (psf->cues)
 						{	free (psf->cues) ;
@@ -857,7 +902,8 @@ aiff_read_header (SF_PRIVATE *psf, COMM_CHUNK *comm_fmt)
 							} ;
 						} ;
 					mark_found++ ;
-					psf_binheader_readf (psf, "j", chunk_size - bytesread) ;
+					if (chunk_size > bytesread)
+						psf_binheader_readf (psf, "j", chunk_size - bytesread) ;
 					break ;
 
 			case FVER_MARKER :
@@ -975,7 +1021,7 @@ aiff_read_header (SF_PRIVATE *psf, COMM_CHUNK *comm_fmt)
 	if (! (found_chunk & HAVE_COMM))
 		return SFE_AIFF_SSND_NO_COMM ;
 
-	if (! psf->dataoffset)
+	if (psf->dataoffset <= 0)
 		return SFE_AIFF_NO_DATA ;
 
 	return 0 ;
@@ -1707,6 +1753,13 @@ aiff_read_basc_chunk (SF_PRIVATE * psf, int datasize)
 {	const char * type_str ;
 	basc_CHUNK bc ;
 	sf_count_t count ;
+
+	if (datasize < (int) sizeof (bc))
+	{	psf_log_printf (psf, " basc : %d (too short)\n", datasize) ;
+		if (datasize > 0)
+			psf_binheader_readf (psf, "j", datasize) ;
+		return 0 ;
+		} ;
 
 	count = psf_binheader_readf (psf, "E442", &bc.version, &bc.numBeats, &bc.rootNote) ;
 	count += psf_binheader_readf (psf, "E222", &bc.scaleType, &bc.sigNumerator, &bc.sigDenominator) ;

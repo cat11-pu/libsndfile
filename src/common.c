@@ -1038,6 +1038,12 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 
 	while ((c = *format++))
 	{
+		/* A short header read fills nothing. Clear the scratch buffer so
+		** a truncated file cannot make this field reuse bytes from the
+		** previous field.
+		*/
+		memset (sixteen_bytes, 0, sizeof (sixteen_bytes)) ;
+
 		read_bytes = 0 ;
 		if (psf->header.indx + 16 >= psf->header.len && psf_bump_header_allocation (psf, 16))
 			break ;

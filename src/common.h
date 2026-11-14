@@ -373,6 +373,14 @@ typedef struct sf_private_tag
 
 	int				error ;
 
+	/* Set when a WAV/AIFF container declaration extends past the end of
+	** the file. The error is reported once a read reaches the truncated
+	** end of the data. truncation_offset is the first missing byte.
+	*/
+	int				truncated ;
+	sf_count_t		truncation_offset ;
+	char			truncstr [128] ;
+
 	int				endian ;		/* File endianness : SF_ENDIAN_LITTLE or SF_ENDIAN_BIG. */
 	int				data_endswap ;	/* Need to endswap data? */
 
@@ -718,6 +726,9 @@ enum
 	SFE_MPC_NO_MARKER,
 
 	SFE_MPEG_BAD_SAMPLERATE,
+
+	SFE_WAV_TRUNCATED,
+	SFE_AIFF_TRUNCATED,
 
 	SFE_MAX_ERROR			/* This must be last in list. */
 } ;

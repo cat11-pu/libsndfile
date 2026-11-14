@@ -154,6 +154,18 @@ static SF_CHUNK_ITERATOR * wav_next_chunk_iterator (SF_PRIVATE *psf, SF_CHUNK_IT
 static int wav_get_chunk_size (SF_PRIVATE *psf, const SF_CHUNK_ITERATOR * iterator, SF_CHUNK_INFO * chunk_info) ;
 static int wav_get_chunk_data (SF_PRIVATE *psf, const SF_CHUNK_ITERATOR * iterator, SF_CHUNK_INFO * chunk_info) ;
 
+static void
+wav_mark_truncated (SF_PRIVATE *psf, sf_count_t offset)
+{
+	if (psf->truncated == 0)
+	{	psf->truncated = SFE_WAV_TRUNCATED ;
+		psf->truncation_offset = offset ;
+		snprintf (psf->truncstr, sizeof (psf->truncstr),
+				"WAV file is truncated at byte offset %" PRId64 ".", offset) ;
+		psf_log_printf (psf, "*** WAV file truncated at byte offset %D.\n", offset) ;
+		} ;
+} /* wav_mark_truncated */
+
 /*------------------------------------------------------------------------------
 ** Public function.
 */
@@ -364,7 +376,9 @@ wav_read_header	(SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 						else
 							psf_log_printf (psf, "RIFX : %u (should be %D)\n", RIFFsize, psf->filelength - 2 * SIGNED_SIZEOF (marker)) ;
 
-						RIFFsize = psf->filelength - 2 * SIGNED_SIZEOF (RIFFsize) ;
+						wav_mark_truncated (psf, psf->filelength) ;
+						RIFFsize = psf->filelength > 2 * SIGNED_SIZEOF (RIFFsize) ?
+								psf->filelength - 2 * SIGNED_SIZEOF (RIFFsize) : 0 ;
 						}
 					else
 					{	if (marker == RIFF_MARKER)
@@ -400,6 +414,7 @@ wav_read_header	(SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 					break ;
 
 			case data_MARKER :
+					{	int data_truncated = 0 ;
 					if ((parsestage & (HAVE_RIFF | HAVE_WAVE | HAVE_fmt)) != (HAVE_RIFF | HAVE_WAVE | HAVE_fmt))
 						return SFE_WAV_NO_DATA ;
 
@@ -415,14 +430,23 @@ wav_read_header	(SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 					psf->dataoffset = psf_ftell (psf) ;
 
 					if (psf->dataoffset > 0)
-					{	if (chunk_size == 0 && RIFFsize == 8 && psf->filelength > 44)
+					{	sf_count_t available ;
+
+						if (chunk_size == 0 && RIFFsize == 8 && psf->filelength > 44)
 						{	psf_log_printf (psf, "*** Looks like a WAV file which wasn't closed properly. Fixing it.\n") ;
 							psf->datalength = psf->filelength - psf->dataoffset ;
 							} ;
 
-						if (psf->datalength > psf->filelength - psf->dataoffset)
-						{	psf_log_printf (psf, "data : %D (should be %D)\n", psf->datalength, psf->filelength - psf->dataoffset) ;
-							psf->datalength = psf->filelength - psf->dataoffset ;
+						available = (psf->filelength == SF_COUNT_MAX || psf->dataoffset <= psf->filelength) ?
+								psf->filelength - psf->dataoffset : 0 ;
+						if (psf->dataoffset > psf->filelength)
+							wav_mark_truncated (psf, psf->filelength) ;
+
+						if (psf->datalength < 0 || psf->datalength > available)
+						{	psf_log_printf (psf, "data : %D (should be %D)\n", psf->datalength, available) ;
+							wav_mark_truncated (psf, psf->filelength) ;
+							psf->datalength = available ;
+							data_truncated = 1 ;
 							}
 						else
 							psf_log_printf (psf, "data : %D\n", psf->datalength) ;
@@ -431,7 +455,8 @@ wav_read_header	(SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 						if (psf->datalength + psf->dataoffset < psf->filelength)
 							psf->dataend = psf->datalength + psf->dataoffset ;
 
-						psf->datalength += chunk_size & 1 ;
+						if (! data_truncated)
+							psf->datalength += chunk_size & 1 ;
 						chunk_size = 0 ;
 						} ;
 
@@ -443,6 +468,7 @@ wav_read_header	(SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 
 					if (psf_ftell (psf) != psf->datalength + psf->dataoffset)
 						psf_log_printf (psf, "*** psf_fseek past end error ***\n") ;
+					}
 					break ;
 
 			case fact_MARKER :

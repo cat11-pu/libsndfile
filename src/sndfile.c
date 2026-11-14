@@ -161,6 +161,7 @@ ErrorStruct SndfileErrors [] =
 	{	SFE_WAV_ADPCM_SAMPLES	, "Error in ADPCM WAV file. Invalid number of samples per block." },
 	{	SFE_WAV_GSM610_FORMAT	, "Error in GSM610 WAV file. Invalid format chunk." },
 	{	SFE_WAV_NMS_FORMAT		, "Error in NMS ADPCM WAV file. Invalid format chunk." },
+	{	SFE_WAV_TRUNCATED		, "WAV file is truncated." },
 
 	{	SFE_AIFF_NO_FORM		, "Error in AIFF file, bad 'FORM' marker." },
 	{	SFE_AIFF_AIFF_NO_FORM	, "Error in AIFF file, 'AIFF' marker without 'FORM'." },
@@ -174,6 +175,7 @@ ErrorStruct SndfileErrors [] =
 	{	SFE_AIFF_NO_SSND		, "Error in AIFF file, bad 'SSND' chunk." },
 	{	SFE_AIFF_NO_DATA		, "Error in AIFF file, no sound data." },
 	{	SFE_AIFF_RW_SSND_NOT_LAST, "Error in AIFF file, RDWR only possible if SSND chunk at end of file." },
+	{	SFE_AIFF_TRUNCATED		, "AIFF file is truncated." },
 
 	{	SFE_AU_UNKNOWN_FORMAT	, "Error in AU file, unknown format." },
 	{	SFE_AU_NO_DOTSND		, "Error in AU file, missing '.snd' or 'dns.' marker." },
@@ -577,6 +579,12 @@ sf_strerror (SNDFILE *sndfile)
 
 		errnum = psf->error ;
 
+		if (errnum == 0 && psf->truncated && psf->read_current >= psf->sf.frames)
+			errnum = psf->truncated ;
+
+		if (errnum == psf->truncated && psf->truncstr [0])
+			return psf->truncstr ;
+
 		if (errnum == SFE_SYSTEM && psf->syserr [0])
 			return psf->syserr ;
 		} ;
@@ -599,6 +607,9 @@ sf_error (SNDFILE *sndfile)
 	if (psf->error)
 		return psf->error ;
 
+	if (psf->truncated && psf->read_current >= psf->sf.frames)
+		return psf->truncated ;
+
 	return 0 ;
 } /* sf_error */
 
@@ -616,6 +627,8 @@ sf_perror (SNDFILE *sndfile)
 	else
 	{	VALIDATE_SNDFILE_AND_ASSIGN_PSF (sndfile, psf, 0) ;
 		errnum = psf->error ;
+		if (errnum == 0 && psf->truncated && psf->read_current >= psf->sf.frames)
+			errnum = psf->truncated ;
 		} ;
 
 	fprintf (stderr, "%s\n", sf_error_number (errnum)) ;
@@ -630,10 +643,12 @@ int
 sf_error_str (SNDFILE *sndfile, char *str, size_t maxlen)
 {	SF_PRIVATE 	*psf ;
 	int 		errnum ;
+	const char	*msg ;
 
 	if (str == NULL)
 		return SFE_INTERNAL ;
 
+	psf = NULL ;
 	if (sndfile == NULL)
 		errnum = sf_errno ;
 	else
@@ -641,7 +656,11 @@ sf_error_str (SNDFILE *sndfile, char *str, size_t maxlen)
 		errnum = psf->error ;
 		} ;
 
-	snprintf (str, maxlen, "%s", sf_error_number (errnum)) ;
+	msg = sf_error_number (errnum) ;
+	if (psf != NULL && errnum == psf->truncated && psf->truncstr [0])
+		msg = psf->truncstr ;
+
+	snprintf (str, maxlen, "%s", msg) ;
 
 	return SFE_NO_ERROR ;
 } /* sf_error_str */
@@ -1698,6 +1717,12 @@ sf_current_byterate (SNDFILE *sndfile)
 /*==============================================================================
 */
 
+static void
+raise_truncation_error	(SF_PRIVATE *psf)
+{	if (psf->truncated)
+		psf->error = psf->truncated ;
+} /* raise_truncation_error */
+
 sf_count_t
 sf_read_raw		(SNDFILE *sndfile, void *ptr, sf_count_t bytes)
 {	SF_PRIVATE 	*psf ;
@@ -1718,7 +1743,8 @@ sf_read_raw		(SNDFILE *sndfile, void *ptr, sf_count_t bytes)
 		} ;
 
 	if (bytes < 0 || psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, bytes) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, bytes) ;
 		return 0 ;
 		} ;
 
@@ -1776,7 +1802,8 @@ sf_read_short	(SNDFILE *sndfile, short *ptr, sf_count_t len)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, len * sizeof (short)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, len * sizeof (short)) ;
 		return 0 ; /* End of file. */
 		} ;
 
@@ -1826,7 +1853,8 @@ sf_readf_short		(SNDFILE *sndfile, short *ptr, sf_count_t frames)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (short)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (short)) ;
 		return 0 ; /* End of file. */
 		} ;
 
@@ -1884,7 +1912,8 @@ sf_read_int		(SNDFILE *sndfile, int *ptr, sf_count_t len)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, len * sizeof (int)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, len * sizeof (int)) ;
 		return 0 ;
 		} ;
 
@@ -1934,7 +1963,8 @@ sf_readf_int	(SNDFILE *sndfile, int *ptr, sf_count_t frames)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (int)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (int)) ;
 		return 0 ;
 		} ;
 
@@ -1992,7 +2022,8 @@ sf_read_float	(SNDFILE *sndfile, float *ptr, sf_count_t len)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, len * sizeof (float)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, len * sizeof (float)) ;
 		return 0 ;
 		} ;
 
@@ -2042,7 +2073,8 @@ sf_readf_float	(SNDFILE *sndfile, float *ptr, sf_count_t frames)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (float)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (float)) ;
 		return 0 ;
 		} ;
 
@@ -2100,7 +2132,8 @@ sf_read_double	(SNDFILE *sndfile, double *ptr, sf_count_t len)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, len * sizeof (double)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, len * sizeof (double)) ;
 		return 0 ;
 		} ;
 
@@ -2150,7 +2183,8 @@ sf_readf_double	(SNDFILE *sndfile, double *ptr, sf_count_t frames)
 		} ;
 
 	if (psf->read_current >= psf->sf.frames)
-	{	psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (double)) ;
+	{	raise_truncation_error (psf) ;
+		psf_memset (ptr, 0, frames * psf->sf.channels * sizeof (double)) ;
 		return 0 ;
 		} ;
 
@@ -3051,6 +3085,7 @@ psf_open_file (SF_PRIVATE *psf, SF_INFO *sfinfo)
 	psf->norm_double	= SF_TRUE ;
 	psf->dataoffset		= -1 ;
 	psf->datalength		= -1 ;
+	psf->truncation_offset	= -1 ;
 	psf->read_current	= -1 ;
 	psf->write_current	= -1 ;
 	psf->auto_header 	= SF_FALSE ;
@@ -3340,6 +3375,14 @@ psf_open_file (SF_PRIVATE *psf, SF_INFO *sfinfo)
 
 	psf->read_current = 0 ;
 	psf->write_current = 0 ;
+
+	/* A truncated container is still readable up to the last complete
+	** frame, but make the condition visible to sf_error() immediately.
+	** Reads clear this error and re-raise it when they reach the end.
+	*/
+	if (psf->truncated)
+		psf->error = psf->truncated ;
+
 	if (psf->file.mode == SFM_RDWR)
 	{	psf->write_current = psf->sf.frames ;
 		psf->have_written = psf->sf.frames > 0 ? SF_TRUE : SF_FALSE ;
