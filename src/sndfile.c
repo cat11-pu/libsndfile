@@ -2988,6 +2988,7 @@ psf_close (SF_PRIVATE *psf)
 	free (psf->container_data) ;
 	free (psf->codec_data) ;
 	free (psf->interleave) ;
+	free (psf->readbuf) ;
 	free (psf->dither) ;
 	free (psf->peak_info) ;
 	free (psf->broadcast_16k) ;

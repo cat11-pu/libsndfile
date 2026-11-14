@@ -70,6 +70,12 @@
 #endif
 
 #define	SF_BUFFER_LEN			(8192)
+/*
+** Size of the reusable, heap-allocated block used by the bulk PCM read paths.
+** A larger block means fewer read() system calls and fewer per-chunk loop
+** iterations when importing very large waveform collections.
+*/
+#define	SF_READ_BUFFER_LEN		(64 * 1024)
 #define	SF_FILENAME_LEN			(1024)
 #define SF_SYSERR_LEN			(256)
 #define SF_MAX_STRINGS			(32)
@@ -427,6 +433,10 @@ typedef struct sf_private_tag
 
 	void			*dither ;
 	void			*interleave ;
+
+	/* Reusable heap-allocated bulk read buffer (lazily allocated). */
+	void			*readbuf ;
+	sf_count_t		readbuf_len ;
 
 	int				last_op ;		/* Last operation; either SFM_READ or SFM_WRITE */
 	sf_count_t		read_current ;
